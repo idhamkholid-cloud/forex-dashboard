@@ -6,47 +6,64 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
-<body class="bg-gray-900 text-white p-6">
+<body class="bg-gray-900 text-white p-4">
   <h1 class="text-3xl font-bold mb-6">📊 Forex Live Signal Dashboard</h1>
   <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
   <script>
     const url = "https://script.google.com/macros/s/AKfycbyKLvSQlDuYy1aNAzDuiEiAEfpScvULjLwu6W0BHCpUOacG9PMUH5BCV3dUi8llMdOB/exec";
+    const RISK_PER_TRADE = 0.02; // 2%
+    const CAPITAL = 500; // USD
+
+    function calculateSize(entry, sl) {
+      const riskAmount = CAPITAL * RISK_PER_TRADE;
+      const slDiff = Math.abs(entry - sl);
+      return slDiff > 0 ? (riskAmount / slDiff).toFixed(2) : "0";
+    }
 
     async function fetchData() {
       try {
         const res = await fetch(url);
         const data = await res.json();
-        const container = document.getElementById("dashboard");
-        container.innerHTML = "";
+        const dashboard = document.getElementById("dashboard");
+        dashboard.innerHTML = "";
 
-        data.forEach(item => {
-          const signalColor = item.signal === "BUY" ? "text-green-400" : "text-red-400";
-          const volIcon = item.volumeSpike === true || item.volumeSpike === "TRUE" ? "✅" : "❌";
+        data
+          .filter(item => item.status === "OPEN") // Hanya tampilkan sinyal aktif
+          .forEach(item => {
+            const signalColor = item.signal === "BUY" ? "text-green-400" : "text-red-400";
+            const volIcon = item.volumeSpike === true || item.volumeSpike === "TRUE" ? "✅" : "❌";
+            const size = calculateSize(Number(item.entry), Number(item.sl));
+            const status = item.status?.toUpperCase();
+            const statusColor =
+              status === "HIT TP" ? "text-green-300" :
+              status === "HIT SL" ? "text-red-300" : "text-yellow-300";
 
-          container.innerHTML += `
-            <div class="bg-gray-800 rounded-2xl p-5 shadow-lg">
-              <h2 class="text-xl font-bold mb-2">${item.symbol}</h2>
-              <p>Signal: <span class="${signalColor} font-semibold">${item.signal}</span></p>
-              <p>Trend: ${item.trend}</p>
-              <p>Entry: ${item.entry}</p>
-              <p>TP: ${item.tp}</p>
-              <p>SL: ${item.sl}</p>
-              <p>RR: ${item.rr}</p>
-              <p>Size: ${item.size} lot</p>
-              <p>Volume Spike: ${volIcon}</p>
-            </div>
-          `;
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
+            dashboard.innerHTML += `
+              <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-bold mb-1">${item.symbol}</h2>
+                <p>Signal: <span class="${signalColor} font-semibold">${item.signal}</span></p>
+                <p>Trend: ${item.trend}</p>
+                <p>Entry: ${item.entry}</p>
+                <p>TP: ${item.tp}</p>
+                <p>SL: ${item.sl}</p>
+                <p>RR: ${item.rr}</p>
+                <p>Size: ${size} lot</p>
+                <p>Volume Spike: ${volIcon}</p>
+                <p>Status: <span class="${statusColor} font-semibold">${status}</span></p>
+                <p class="text-sm text-gray-400 mt-2">📅 ${item.timestamp || "-"}</p>
+              </div>
+            `;
+          });
+      } catch (e) {
+        console.error("Fetch error:", e);
         document.getElementById("dashboard").innerHTML =
-          "<p class='text-red-500'>Failed to load data. Check your API URL or CORS permissions.</p>";
+          "<p class='text-red-400'>❌ Failed to load data. Check JSON URL or CORS.</p>";
       }
     }
 
     fetchData();
-    setInterval(fetchData, 10000); // Auto-refresh setiap 10 detik
+    setInterval(fetchData, 10000); // Refresh setiap 10 detik
   </script>
 </body>
 </html>
