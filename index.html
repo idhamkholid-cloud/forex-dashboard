@@ -2,68 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Forex Signal Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Signal Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; }
+    h1 { color: #00ffcc; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 8px 12px; border: 1px solid #444; text-align: center; }
+    th { background-color: #222; }
+    tr.buy { background-color: #003300; }
+    tr.sell { background-color: #330000; }
+    tr.hit-tp { background-color: #004400; font-weight: bold; }
+    tr.hit-sl { background-color: #440000; font-weight: bold; }
+    tr.open { background-color: #222222; }
+  </style>
 </head>
-<body class="bg-gray-900 text-white p-4">
-  <h1 class="text-3xl font-bold mb-6">📊 Forex Live Signal Dashboard</h1>
-  <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+<body>
+  <h1>Real-Time Trading Signals</h1>
+  <table id="signalTable">
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Signal</th>
+        <th>Trend</th>
+        <th>Entry</th>
+        <th>TP</th>
+        <th>SL</th>
+        <th>RR</th>
+        <th>Size</th>
+        <th>Status</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbyKLvSQlDuYy1aNAzDuiEiAEfpScvULjLwu6W0BHCpUOacG9PMUH5BCV3dUi8llMdOB/exec";
-    const RISK_PER_TRADE = 0.02; // 2%
-    const CAPITAL = 500; // USD
+    const sheetURL = "https://docs.google.com/spreadsheets/d/1EoC6tg8snAnOU4bgqRr4bYQJ4zf58cYLVXuVArUPtBg/gviz/tq?tqx=out:json&sheet=Dashboard";
 
-    function calculateSize(entry, sl) {
-      const riskAmount = CAPITAL * RISK_PER_TRADE;
-      const slDiff = Math.abs(entry - sl);
-      return slDiff > 0 ? (riskAmount / slDiff).toFixed(2) : "0";
-    }
-
-    async function fetchData() {
+    async function fetchSheet() {
       try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const dashboard = document.getElementById("dashboard");
-        dashboard.innerHTML = "";
+        const res = await fetch(sheetURL);
+        const text = await res.text();
+        const json = JSON.parse(text.substr(47).slice(0, -2));
 
-        data
-          .filter(item => item.status === "OPEN") // Hanya tampilkan sinyal aktif
-          .forEach(item => {
-            const signalColor = item.signal === "BUY" ? "text-green-400" : "text-red-400";
-            const volIcon = item.volumeSpike === true || item.volumeSpike === "TRUE" ? "✅" : "❌";
-            const size = calculateSize(Number(item.entry), Number(item.sl));
-            const status = item.status?.toUpperCase();
-            const statusColor =
-              status === "HIT TP" ? "text-green-300" :
-              status === "HIT SL" ? "text-red-300" : "text-yellow-300";
+        const table = document.querySelector("#signalTable tbody");
+        table.innerHTML = "";
 
-            dashboard.innerHTML += `
-              <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
-                <h2 class="text-xl font-bold mb-1">${item.symbol}</h2>
-                <p>Signal: <span class="${signalColor} font-semibold">${item.signal}</span></p>
-                <p>Trend: ${item.trend}</p>
-                <p>Entry: ${item.entry}</p>
-                <p>TP: ${item.tp}</p>
-                <p>SL: ${item.sl}</p>
-                <p>RR: ${item.rr}</p>
-                <p>Size: ${size} lot</p>
-                <p>Volume Spike: ${volIcon}</p>
-                <p>Status: <span class="${statusColor} font-semibold">${status}</span></p>
-                <p class="text-sm text-gray-400 mt-2">📅 ${item.timestamp || "-"}</p>
-              </div>
-            `;
-          });
+        json.table.rows.forEach(row => {
+          const values = row.c.map(cell => cell?.v ?? "");
+          const [symbol, signal, trend, entry, tp, sl, rr, size, status, time] = values;
+          let tr = document.createElement("tr");
+
+          tr.classList.add(
+            signal.toLowerCase() === "buy" ? "buy" : signal.toLowerCase() === "sell" ? "sell" : "",
+            status.toLowerCase().replace(" ", "-")
+          );
+
+          tr.innerHTML = `
+            <td>${symbol}</td>
+            <td>${signal}</td>
+            <td>${trend}</td>
+            <td>${entry}</td>
+            <td>${tp}</td>
+            <td>${sl}</td>
+            <td>${rr}</td>
+            <td>${size}</td>
+            <td>${status}</td>
+            <td>${time}</td>
+          `;
+          table.appendChild(tr);
+        });
       } catch (e) {
         console.error("Fetch error:", e);
-        document.getElementById("dashboard").innerHTML =
-          "<p class='text-red-400'>❌ Failed to load data. Check JSON URL or CORS.</p>";
       }
     }
 
-    fetchData();
-    setInterval(fetchData, 10000); // Refresh setiap 10 detik
+    fetchSheet();
+    setInterval(fetchSheet, 10000); // refresh every 10s
   </script>
 </body>
 </html>
