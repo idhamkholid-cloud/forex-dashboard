@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NCT Stock Column Chart</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 1rem;
+    }
+    h2 {
+      text-align: center;
+      color: #00ffc8;
+    }
+    .chart-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+    .bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      background: #1e1e1e;
+      border-radius: 6px;
+      width: 40px;
+      height: 200px;
+      position: relative;
+    }
+    .bar div {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+    }
+    .bar span {
+      margin-top: 0.3rem;
+      font-size: 0.7rem;
+      text-align: center;
+    }
+    .adv { background: lime; }
+    .dec { background: red; }
+    .label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>NCT Live Stock Movement</h2>
+  <div class="chart-container" id="chart"></div>
+
+  <script>
+    const sampleData = [
+      { symbol: "HPG", point: 1.05 },
+      { symbol: "SSI", point: 0.85 },
+      { symbol: "FPT", point: -0.92 },
+      { symbol: "GAS", point: 0.60 },
+      { symbol: "STB", point: -0.73 },
+      { symbol: "VIC", point: 1.2 },
+      { symbol: "VNM", point: -0.45 },
+      { symbol: "MWG", point: 0.25 },
+      { symbol: "VCB", point: -1.05 },
+      { symbol: "VHM", point: 0.33 }
+    ];
+
+    const maxAbs = Math.max(...sampleData.map(d => Math.abs(d.point)));
+    const chart = document.getElementById("chart");
+
+    sampleData.forEach(data => {
+      const percent = Math.abs(data.point) / maxAbs * 100;
+      const bar = document.createElement("div");
+      bar.className = "bar";
+
+      const fill = document.createElement("div");
+      fill.style.height = `${percent}%`;
+      fill.className = data.point >= 0 ? "adv" : "dec";
+      bar.appendChild(fill);
+
+      const label = document.createElement("span");
+      label.className = "label";
+      label.textContent = data.symbol;
+      bar.appendChild(label);
+
+      chart.appendChild(bar);
+    });
+  </script>
+</body>
+</html>
