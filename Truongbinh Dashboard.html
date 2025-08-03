@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App TruongBinh III</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      background: #111;
+      padding: 16px 0;
+      border-bottom: 2px solid gold;
+    }
+    header h1 {
+      color: gold;
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    .contact {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-top: 4px;
+    }
+    .stock-info {
+      margin: 30px auto;
+      background: #111;
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+      border: 1px solid #555;
+      border-radius: 8px;
+    }
+    .price {
+      font-size: 3rem;
+      color: #00ffcc;
+      font-weight: bold;
+    }
+    .change {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: yellow;
+    }
+    .info-label {
+      color: #999;
+      margin-top: 20px;
+    }
+    .footer {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 40px;
+      padding-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>App TruongBinh III</h1>
+    <div class="contact">Hotline / Face / Zalo: 0983.356.323</div>
+  </header>
+
+  <div class="stock-info">
+    <div class="price" id="price">--</div>
+    <div class="change" id="change">--</div>
+    <div class="info-label" id="symbol">Mã: VNM | Sàn: HOSE</div>
+    <div class="info-label" id="ohlc">O: -- | H: -- | L: -- | C: -- | Vol: --</div>
+  </div>
+
+  <div class="footer">
+    Phiên bản mô phỏng giao diện Ichimoku Plus dành cho Trường Bình<br />
+    Đảm bảo cập nhật giá theo thời gian thực từ dữ liệu API/Sheet/Alert
+  </div>
+
+  <script>
+    // Contoh data dummy, bisa diganti fetch dari Google Sheets/API
+    const data = {
+      symbol: "VNM",
+      market: "HOSE",
+      o: 79800,
+      h: 80400,
+      l: 79200,
+      c: 80000,
+      prevClose: 79600,
+      vol: 1250000
+    };
+
+    const dd = (data.c - data.prevClose).toFixed(2);
+    const pct = ((dd / data.prevClose) * 100).toFixed(2);
+
+    document.getElementById("price").textContent = data.c.toLocaleString();
+    document.getElementById("change").textContent = `${dd} (${pct}%)`;
+    document.getElementById("symbol").textContent = `Mã: ${data.symbol} | Sàn: ${data.market}`;
+    document.getElementById("ohlc").textContent = `O: ${data.o} | H: ${data.h} | L: ${data.l} | C: ${data.c} | Vol: ${data.vol.toLocaleString()}`;
+  </script>
+</body>
+</html>
