@@ -1,0 +1,39 @@
+//@version=5
+indicator("TruongBinh Mini Dashboard", overlay=true)
+
+// Simulasi data harga
+symbol = "VNM"
+o = 79800.0
+h = 80400.0
+l = 79200.0
+c = 80000.0
+prevClose = 79600.0
+vol = 1250000.0
+
+// Perhitungan
+chg = c - prevClose
+chgPct = chg / prevClose * 100
+
+// Format tampilan
+chgText = str.tostring(chg, "#.##") + " (" + str.tostring(chgPct, "#.##") + "%)"
+priceText = str.tostring(c, "#.##")
+volText = str.tostring(vol, "#,##0")
+
+// Buat tabel
+var table tb = table.new(position.top_right, 1, 6, border_width=1, frame_color=color.white, bgcolor=color.black)
+
+if bar_index % 5 == 0
+    table.cell(tb, 0, 0, "App TruongBinh III", text_color=color.yellow, bgcolor=color.rgb(10,10,10))
+    table.cell(tb, 0, 1, "Mã: " + symbol, text_color=color.gray)
+    table.cell(tb, 0, 2, "Giá: " + priceText, text_color=color.cyan)
+    table.cell(tb, 0, 3, "Thay đổi: " + chgText, text_color=color.lime)
+    table.cell(tb, 0, 4, "O/H/L/C: " + str.tostring(o) + "/" + str.tostring(h) + "/" + str.tostring(l) + "/" + str.tostring(c), text_color=color.silver)
+    table.cell(tb, 0, 5, "Vol: " + volText, text_color=color.orange)
+
+// Tambahkan label branding
+if bar_index % 20 == 0
+    label.new(bar_index, high + 10,
+      text = "Facebook Truong Binh\n0983.356.323",
+      style = label.style_label_down,
+      textcolor = color.yellow,
+      bgcolor = color.black)
